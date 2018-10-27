@@ -49,7 +49,8 @@ _LANGUAGE_GUESS = {
     '.scala': 'Scala',
 }
 _GUESS_MAINCLASS = {'Java', 'Scala', 'Kotlin'}
-_GUESS_MAINFILE = {'Python 2', 'Python 3', 'PHP', 'JavaScript', 'Rust', 'Pascal'}
+_GUESS_MAINFILE = {'Python 2', 'Python 3',
+                   'PHP', 'JavaScript', 'Rust', 'Pascal'}
 
 _HEADERS = {'User-Agent': 'kattis-cli-submit'}
 
@@ -226,8 +227,9 @@ def submit(submit_url, cookies, problem, language, files, mainclass='', tag=''):
     return requests.post(submit_url, data=data, files=sub_files, cookies=cookies, headers=_HEADERS)
 
 
-def confirm_or_die(problem, language, files, mainclass, tag):
-    print('Problem:', problem)
+def confirm_or_die(problem, language, files, mainclass, tag, cfg):
+    print('Problem:', problem,
+          f'({get_url(cfg, "kattis", f"problems/{problem}")})')
     print('Language:', language)
     print('Files:', ', '.join(files))
     if mainclass:
@@ -237,10 +239,6 @@ def confirm_or_die(problem, language, files, mainclass, tag):
             print('Mainclass:', mainclass)
     if tag:
         print('Tag:', tag)
-    print('Submit (y/N)?')
-    if sys.stdin.readline().upper()[:-1] != 'Y':
-        print('Cancelling')
-        sys.exit(1)
 
 
 def open_submission(submit_response, cfg):
@@ -249,10 +247,8 @@ def open_submission(submit_response, cfg):
     m = re.search(r'Submission ID: (\d+)', submit_response)
     if m:
         submission_id = m.group(1)
-        print('Open in browser (y/N)?')
-        if sys.stdin.readline().upper()[:-1] == 'Y':
-            url = '%s/%s' % (submissions_url, submission_id)
-            webbrowser.open(url)
+        url = '%s/%s' % (submissions_url, submission_id)
+        webbrowser.open(url)
 
 
 def main():
@@ -328,7 +324,7 @@ extension "%s"''' % (ext,))
     submit_url = get_url(cfg, 'submissionurl', 'submit')
 
     if not args.force:
-        confirm_or_die(problem, language, files, mainclass, tag)
+        confirm_or_die(problem, language, files, mainclass, tag, cfg)
 
     try:
         result = submit(submit_url,
